@@ -1,40 +1,24 @@
-import PaytmChecksum from 'paytmchecksum';
+const PaytmChecksum = require("paytmchecksum");
 
-export default async function handler(req, res) {
-  const { name, phone, email, amount } = req.body;
-  const orderId = 'ORDER_' + Date.now();
-
-  const mid = process.env.PAYTM_MID;
-  const key = process.env.PAYTM_KEY;
+module.exports = async (req, res) => {
+  const { name, email, phone, amount } = req.body;
+  const orderId = "ORDERID_" + new Date().getTime();
 
   const params = {
-    MID: mid,
-    WEBSITE: 'WEBSTAGING',
-    INDUSTRY_TYPE_ID: 'Retail',
-    CHANNEL_ID: 'WEB',
+    MID: process.env.PAYTM_MID,
+    WEBSITE: "WEBSTAGING",
+    INDUSTRY_TYPE_ID: "Retail",
+    CHANNEL_ID: "WEB",
     ORDER_ID: orderId,
-    CUST_ID: phone,
-    MOBILE_NO: phone,
-    EMAIL: email,
+    CUST_ID: email || phone,
     TXN_AMOUNT: amount,
-    CALLBACK_URL: `${process.env.BASE_URL}/api/callback`
+    CALLBACK_URL: `${process.env.BASE_URL}/api/callback`,
+    MOBILE_NO: phone,
+    EMAIL: email
   };
 
-  const checksum = await PaytmChecksum.generateSignature(params, key);
+  const checksum = await PaytmChecksum.generateSignature(params, process.env.PAYTM_KEY);
+  const body = { ...params, CHECKSUMHASH: checksum };
 
-  const actionUrl = 'https://securegw-stage.paytm.in/order/process';
-  let formFields = Object.keys(params).map(
-    key => `<input type="hidden" name="${key}" value="${params[key]}" />`
-  ).join('\n');
-
-  res.send(`
-    <html>
-      <body onload="document.forms[0].submit()">
-        <form method="post" action="${actionUrl}">
-          ${formFields}
-          <input type="hidden" name="CHECKSUMHASH" value="${checksum}" />
-        </form>
-      </body>
-    </html>
-  `);
-}
+  res.json({ success: true, body });
+};
