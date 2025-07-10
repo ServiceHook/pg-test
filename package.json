@@ -1,0 +1,6 @@
+{
+  "name": "buy-me-coffee",
+  "dependencies": {
+    "paytmchecksum": "^1.0.0"
+  }
+}
