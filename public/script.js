@@ -1,24 +1,38 @@
-document.getElementById('coffeeBtn').onclick = () => {
-  document.getElementById('coffeeForm').classList.remove('hidden');
-};
+document.getElementById("payBtn").addEventListener("click", async () => {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+  const amount = document.getElementById("amount").value;
 
-document.getElementById('coffeeForm').onsubmit = async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const data = {
-    name: form.name.value,
-    phone: form.phone.value,
-    email: form.email.value,
-    amount: form.amount.value
-  };
+  if (!name || !phone || !amount) {
+    alert("Please fill all required fields");
+    return;
+  }
 
-  const res = await fetch('/api/initiate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+  const res = await fetch("/api/initiate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, phone, amount })
   });
 
-  const html = await res.text();
-  const win = window.open();
-  win.document.write(html);
-};
+  const data = await res.json();
+
+  if (data.success) {
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "https://securegw-stage.paytm.in/order/process";
+
+    Object.keys(data.body).forEach(key => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = data.body[key];
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  } else {
+    alert("Something went wrong!");
+  }
+});
