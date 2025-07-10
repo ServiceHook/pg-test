@@ -1,6 +1,9 @@
 {
-  "name": "buy-me-coffee",
+  "name": "paytm-coffee",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
   "dependencies": {
-    "paytmchecksum": "^1.0.0"
+    "paytmchecksum": "^1.0.6"
   }
 }
